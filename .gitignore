@@ -16,3 +16,4 @@ npm-debug.log*
 
 # lighthouse ci output
 .lighthouseci/
+.vercel

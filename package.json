@@ -11,7 +11,7 @@
     "perf:grid": "node scripts/grid-shift-check.mjs http://localhost:3100 --runs 3"
   },
   "dependencies": {
-    "next": "15.5.4",
+    "next": "15.5.29",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
@@ -23,7 +23,7 @@
     "@types/react-dom": "19.1.9",
     "autoprefixer": "10.4.21",
     "eslint": "9.36.0",
-    "eslint-config-next": "15.5.4",
+    "eslint-config-next": "15.5.29",
     "js-yaml": "^4.1.0",
     "postcss": "8.5.6",
     "puppeteer-core": "^24.10.0",
