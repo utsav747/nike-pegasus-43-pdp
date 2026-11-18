@@ -4,7 +4,7 @@ type Props = { price: string };
 export default function ProductPrice({ price }: Props) {
   return (
     <section className="flex h-[50px] min-h-[50px] w-full items-center overflow-hidden px-4">
-      <p className="text-[16px] font-medium leading-[24px] text-nike-black">{price}</p>
+      <p data-testid="price" className="text-[16px] font-medium leading-[24px] text-nike-black">{price}</p>
     </section>
   );
 }

@@ -67,3 +67,40 @@ Stock counts, read from `data/pegasus-43-stock.json` (not hardcoded):
 4. **Image** uses `next/image` with `unoptimized`, because the placeholder is an SVG. Remove `unoptimized` when a real JPG/PNG/WebP is used.
 5. **`next lint`** is deprecated in Next.js 15.5 (removed in 16) but still works and is what the prompt asks for; `npx @next/codemod@canary next-lint-to-eslint-cli .` migrates it later.
 6. **Size labels** show the men's size only (no "M"/"W" prefix), because the 44px buttons have no room for it; the hidden legend and each button's label say "Men's".
+
+## Slow 4G phone check (size grid stability)
+
+Settings come from `perf/slow-4g-mobile-profile.yaml`, a copy of the Web Platform Slow 4G Mobile Check Profile (owner Diego Salazar; change it upstream, not here).
+
+- Network: Slow 4G, 150 ms round trip, 1,638.4 Kbps (simulated). DevTools traces use 562.5 ms request latency, 1,474.56 Kbps down, 675 Kbps up.
+- CPU: 4x slowdown.
+- Screen: 375 x 812 CSS px, 3x pixel density, mobile on.
+
+Limits:
+
+| Limit | Value | Where |
+|---|---:|---|
+| Performance score | at least 90 | `speed-budget.json` |
+| Size grid movement | 0 px | `speed-budget.json` |
+| Smallest size button side | at least 44 px | `speed-budget.json` |
+| Cumulative layout shift | 0 | `lighthouserc.cjs` |
+| First contentful paint | 1,800 ms max | `lighthouserc.cjs` |
+| Largest contentful paint | 2,500 ms max | `lighthouserc.cjs` |
+| Total blocking time | 200 ms max | `lighthouserc.cjs` |
+| Speed index | 3,400 ms max | `lighthouserc.cjs` |
+
+How to run it:
+
+```bash
+npm run build
+npm run perf:lhci                                   # Lighthouse CI, 3 runs, asserts the limits
+npx next start -p 3100 & npm run perf:grid          # DevTools trace, fails if the size grid moves at all
+```
+
+`.github/workflows/lighthouse.yml` runs both on every push.
+
+Results (18 Nov 2026, production build): performance 97 to 100 over six Lighthouse runs, FCP 0.6 to 0.7 s, LCP 1.7 to 1.8 s, TBT 16 to 177 ms, CLS 0. The DevTools trace placed the size grid's top edge at 400 px from first paint to fully loaded, so it moved 0 px. The photo box (300 px), title (50 px) and price (50 px) all have fixed heights, CSS is inlined, and no web font is downloaded. As a result, a late photo, font or price cannot push the grid. To check that the trace would catch a shift, a test page with an unsized late image and late price was run through it, and it reported 320 px of movement.
+
+The five `data-testid` markers the profile reads (`size-grid`, `size-button`, `size-button-sold-out`, `main-photo`, `price`) were added. They do not change the layout.
+
+Open item: Lighthouse picks a tech-copy paragraph as the largest content element, not `main-photo`. Chrome ignores the placeholder SVG because it carries too little image detail. This should change once the real 1,125 px product photo replaces the placeholder. Re-run the check at that point.

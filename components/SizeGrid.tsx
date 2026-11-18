@@ -27,6 +27,7 @@ export default function SizeGrid({ sizes }: Props) {
 
   return (
     <section
+      data-testid="size-grid"
       aria-labelledby="size-legend"
       className="relative h-[220px] min-h-[220px] w-full overflow-hidden pb-4 pl-[21px] pr-[22px] pt-4"
     >
@@ -49,6 +50,7 @@ export default function SizeGrid({ sizes }: Props) {
             return (
               <button
                 key={s.sku}
+                data-testid={soldOut ? "size-button-sold-out" : "size-button"}
                 type="button"
                 disabled={soldOut}
                 aria-disabled={soldOut || undefined}

@@ -8,6 +8,7 @@ export default function ProductImage() {
       className="relative flex h-[300px] min-h-[300px] w-full items-center justify-center overflow-hidden bg-nike-grey-100"
     >
       <Image
+        data-testid="main-photo"
         src="/pegasus-43-placeholder.svg"
         alt="Nike Pegasus 43 in Black/White-Volt (placeholder image)"
         width={375}

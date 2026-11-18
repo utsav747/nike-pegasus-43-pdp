@@ -13,3 +13,6 @@ npm-debug.log*
 
 # env files (never commit secrets)
 .env*
+
+# lighthouse ci output
+.lighthouseci/

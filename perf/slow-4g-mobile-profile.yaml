@@ -1,0 +1,197 @@
+# =============================================================================
+# Web Platform Slow 4G Mobile Check Profile
+# -----------------------------------------------------------------------------
+# Owner:      Diego Salazar, Web Performance Engineer, Web Platform Engineering
+# Applies to: nike-pegasus-phone-page (Next.js on Vercel, Lighthouse CI on every push)
+# In use for: Nike Pegasus 43 launch page (style HV7521-001), Nov-Dec 2026
+#             Launch date: 10 December 2026
+#
+# This file is the mobile check contract. It has three parts:
+#   1. lighthouse_settings: the network, CPU and phone screen settings used to
+#      measure every shoe page.
+#   2. watched_elements: the data-testid selectors the check reads on the page.
+#   3. budget_file: the three keys the repo check reads from speed-budget.json,
+#      and the required value for each key.
+#
+# POLICY
+#   Page owners may set stricter values in speed-budget.json than the values
+#   required here. A budget file with looser values fails the launch check.
+#   A budget file also fails if it is missing one of the three keys or adds a
+#   key that is not listed here.
+#   "Stricter" means:
+#     performance_score_min   -> a higher number (90 to 100)
+#     size_grid_shift_px_max  -> a lower number (0 is already the strictest)
+#     size_button_min_px      -> a higher number (44 or more)
+#
+# RECORDING A PHONE TRACE (Chrome DevTools MCP)
+#   Put these same values in your trace request so the trace matches the check:
+#   a 375 x 812 CSS px viewport at 3x pixel density with mobile on, Slow 4G
+#   (150 ms round trip, 1638.4 Kbps) and a 4x CPU slowdown.
+#   Do not judge the size grid from a desktop trace or an unthrottled trace.
+#
+# Questions or proposed changes: open a PR on this file and request review
+# from Diego Salazar. Do not change these values inside a page repo.
+# =============================================================================
+
+profile:
+  name: web-platform-slow-4g-mobile
+  owner: Diego Salazar
+  team: Web Platform Engineering
+  repo: nike-pegasus-phone-page
+  traffic_scope: Global Nike.com phone traffic
+  effective_from: "2026-11-16"
+  review_before: "2026-12-07"   # Speed budget and layout shift fixes review with Diego Salazar
+
+# -----------------------------------------------------------------------------
+# 1. lighthouse_settings
+#    These are Lighthouse's own config setting names. You can paste this block
+#    into a Lighthouse or Lighthouse CI "settings" section without changes.
+# -----------------------------------------------------------------------------
+lighthouse_settings:
+  # Scores the page as a phone, not a desktop. This picks the mobile scoring rules.
+  formFactor: mobile
+
+  # "simulate" loads the page at full speed, then works out how long the load
+  # would take on the slow network and CPU set below. Scores vary less between
+  # runs than when the real connection is slowed.
+  throttlingMethod: simulate
+
+  throttling:
+    # Round-trip time: how long one message takes to reach the server and come back.
+    # The simulator uses this value.
+    rttMs: 150
+
+    # Network speed in kilobits per second. The simulator uses this value.
+    # Together with rttMs, this is Lighthouse's "Slow 4G" preset.
+    throughputKbps: 1638.4
+
+    # Delay added to each request when the real browser is slowed
+    # (throttlingMethod devtools, or a Chrome DevTools MCP trace).
+    # This is rttMs x 3.75, so DevTools traces line up with the simulator.
+    requestLatencyMs: 562.5
+
+    # Download speed when the real browser is slowed. This is throughputKbps x 0.9.
+    downloadThroughputKbps: 1474.56
+
+    # Upload speed when the real browser is slowed.
+    uploadThroughputKbps: 675
+
+    # Treats the phone CPU as 4 times slower than the test machine.
+    # This is the "4x CPU slowdown".
+    cpuSlowdownMultiplier: 4
+
+  screenEmulation:
+    # Viewport width in CSS pixels. This matches the 375 px phone width target.
+    width: 375
+
+    # Viewport height in CSS pixels. This is the height of the first screen a runner sees.
+    height: 812
+
+    # Device pixels per CSS pixel. At 3, a 375 px wide photo needs 1125 real
+    # pixels to look sharp.
+    deviceScaleFactor: 3
+
+    # Turns on touch events and the page's <meta name="viewport"> phone behaviour.
+    mobile: true
+
+    # Keeps screen emulation on. Lighthouse needs this field when
+    # screenEmulation is set by hand.
+    disabled: false
+
+# -----------------------------------------------------------------------------
+# 2. watched_elements
+#    The check finds each element by [data-testid="..."]. If your page draws an
+#    element without its data-testid, the check cannot read it and the run fails.
+#    Before you write speed-budget.json, confirm your page renders all five.
+# -----------------------------------------------------------------------------
+watched_elements:
+  - test_id: size-grid
+    selector: '[data-testid="size-grid"]'
+    reads: Vertical position of the grid's top edge (CSS px), tracked from first paint to fully loaded.
+    used_by: [size_grid_shift_px_max]
+
+  - test_id: size-button
+    selector: '[data-testid="size-button"]'
+    reads: Rendered width and height of every in-stock or low-stock size button.
+    used_by: [size_button_min_px]
+
+  - test_id: size-button-sold-out
+    selector: '[data-testid="size-button-sold-out"]'
+    reads: Rendered width and height of every disabled sold-out size button. Sold-out sizes must stay in the grid at full size.
+    used_by: [size_button_min_px]
+
+  - test_id: main-photo
+    selector: '[data-testid="main-photo"]'
+    reads: Reported as the expected largest-content element (the biggest thing drawn on the first screen). Without reserved space, a late photo pushes the size grid down.
+    used_by: [performance_score_min, size_grid_shift_px_max]
+
+  - test_id: price
+    selector: '[data-testid="price"]'
+    reads: Checked for late text arrival above the size grid. If the price or its font arrives late, the grid moves.
+    used_by: [size_grid_shift_px_max]
+
+# -----------------------------------------------------------------------------
+# 3. budget_file
+#    The repo check reads exactly these three keys from speed-budget.json.
+#    Copy the key names and required values exactly. You may make a value
+#    stricter. You may not make it looser.
+#
+#    A speed-budget.json that passes, with the required values:
+#      {
+#        "performance_score_min": 90,
+#        "size_grid_shift_px_max": 0,
+#        "size_button_min_px": 44
+#      }
+# -----------------------------------------------------------------------------
+budget_file:
+  path: speed-budget.json          # At the root of the nike-pegasus-phone-page repo
+  repo: nike-pegasus-phone-page
+  format: json
+  allow_extra_keys: false
+  allow_missing_keys: false
+  value_set_by: page owner         # Each value must equal or be stricter than required_value
+
+  keys:
+    performance_score_min:
+      type: integer
+      unit: Lighthouse performance score, 0-100
+      comparison: ">="             # Page passes when its score is >= this value
+      required_value: 90
+      stricter_direction: higher
+      allowed_range: [90, 100]
+      measured_under: lighthouse_settings
+      reads_from: Lighthouse mobile run of the live Vercel page, using the settings in part 1
+
+    size_grid_shift_px_max:
+      type: integer
+      unit: CSS px
+      comparison: "<="             # Total size-grid movement must be <= this value
+      required_value: 0
+      stricter_direction: lower
+      allowed_range: [0, 0]        # 0 is the only value that passes
+      measured_under: lighthouse_settings
+      reads_from: '[data-testid="size-grid"]'
+      measures: Total vertical movement of the size grid from first paint to fully loaded
+
+    size_button_min_px:
+      type: integer
+      unit: CSS px
+      comparison: ">="             # The smaller of width and height must be >= this value
+      required_value: 44
+      stricter_direction: higher
+      allowed_range: [44, null]    # null = no upper limit
+      measured_under: lighthouse_settings
+      reads_from:
+        - '[data-testid="size-button"]'
+        - '[data-testid="size-button-sold-out"]'
+      measures: The smaller of width and height of every size button, sold-out buttons included
+      # The design system's touch target floor is 44 x 44 CSS px (approved by
+      # Lena Whitaker). This profile requires the same 44, so any button that
+      # passes here also meets the 44 x 44 rule.
+
+  fails_launch_check_when:
+    - speed-budget.json is missing from the repo root
+    - Any of the three keys is missing
+    - Any key not listed above is present
+    - Any value is looser than its required_value
+    - Any watched element in part 2 is not found on the page

@@ -1,0 +1,24 @@
+name: Slow 4G mobile check
+
+on: [push, pull_request]
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # Lighthouse CI with the profile's throttling; fails on the speed-budget.json limits.
+      - run: npm run perf:lhci
+      # DevTools-throttled trace that fails if [data-testid="size-grid"] moves at all.
+      - run: |
+          npx next start -p 3100 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3100 >/dev/null && break; sleep 1; done
+          npm run perf:grid
