@@ -30,6 +30,7 @@ Size grid:
 - Rows of 7, 7, 7, 5 buttons; every button 44x44.
 - Horizontal and vertical gaps all 4px; left padding 21px, right 22px, top/bottom 16px.
 - No horizontal page scroll (document width 375px).
+- Narrower phones: below 375px the side padding drops to 16px and the square buttons shrink to fit all 7 columns (43.4px at 360, 37.7px at 320), gaps stay 4px, rows stay 7/7/7/5, the section stays 220px and the page stays 1,220px. "Selling out fast" notes fit inside at 320.
 
 Stock counts, read from `data/pegasus-43-stock.json` (not hardcoded). Data is the 8 December 2026 size and stock snapshot:
 

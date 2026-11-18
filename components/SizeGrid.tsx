@@ -18,8 +18,10 @@ function ariaLabel(s: SizeStock): string {
 
 /**
  * 4. Size grid, fixed 220px.
- * 7 columns of 44px buttons with 4px gaps: 21 + 7*44 + 6*4 + 22 = 375px wide.
+ * At 375px: 7 columns of 44px buttons with 4px gaps: 21 + 7*44 + 6*4 + 22 = 375px wide.
  * 4 rows: 16 + 4*44 + 3*4 + 16 = 220px tall. 26 sizes, so the last row has 5 buttons and 2 empty slots.
+ * Below 375px the side padding drops to 16px and the square buttons shrink (columns are
+ * minmax(0, 44px)) so all 7 columns still fit; the section stays 220px, so nothing below moves.
  */
 export default function SizeGrid({ sizes }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
@@ -29,13 +31,13 @@ export default function SizeGrid({ sizes }: Props) {
     <section
       data-testid="size-grid"
       aria-labelledby="size-legend"
-      className="relative h-[220px] min-h-[220px] w-full overflow-hidden pb-4 pl-[21px] pr-[22px] pt-4"
+      className="relative h-[220px] min-h-[220px] w-full overflow-hidden px-4 pb-4 pt-4 min-[375px]:pl-[21px] min-[375px]:pr-[22px]"
     >
       <fieldset className="m-0 h-[188px] min-h-[188px] min-w-0 overflow-hidden border-0 p-0">
         <legend id="size-legend" className="sr-only">
           Select size, US men&apos;s
         </legend>
-        <div className="grid h-[188px] grid-cols-[repeat(7,44px)] grid-rows-[repeat(4,44px)] gap-1">
+        <div className="grid grid-cols-[repeat(7,minmax(0,44px))] gap-1">
           {sizes.map((s) => {
             const soldOut = s.stock_status === "sold_out";
             const lowStock = s.stock_status === "low_stock";
@@ -59,11 +61,11 @@ export default function SizeGrid({ sizes }: Props) {
                 onClick={() => {
                   if (!soldOut) setSelected(s.sku);
                 }}
-                className={`flex size-[44px] min-h-[44px] flex-col items-center justify-center overflow-hidden border border-solid p-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nike-black ${state}`}
+                className={`flex aspect-square w-full max-w-[44px] flex-col items-center justify-center overflow-hidden border border-solid p-0 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nike-black ${state}`}
               >
                 <span className="block text-[13px] font-medium leading-[14px]">{sizeText(s.size_us_men)}</span>
                 {lowStock && (
-                  <span aria-hidden="true" className="mt-[1px] block w-[40px] text-2xs font-medium">
+                  <span aria-hidden="true" className="mt-[1px] block w-full px-[1px] text-2xs font-medium">
                     Selling out fast
                   </span>
                 )}
