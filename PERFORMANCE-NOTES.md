@@ -1,6 +1,6 @@
 # Performance notes: size grid on Slow 4G
 
-The size grid doesn’t move on a Slow 4G phone. It sits 400px from the top from first paint to the end of loading, with layout shift at 0 before and after. No layout fix was needed, because the photo, title and price already have fixed heights of 300, 50 and 50px, and no web font downloads. The repo is [nike-pegasus-43-pdp](https://github.com/utsav747/nike-pegasus-43-pdp), commit 54c6aea. It now has the Lighthouse CI config, a grid-movement check and a GitHub workflow. The workflow hasn’t run on GitHub yet.
+The size grid doesn’t move on a Slow 4G phone. It sits 400px from the top from first paint to the end of loading, with layout shift at 0 before and after. No layout fix was needed, because the photo, title and price already have fixed heights of 300, 50 and 50px, and no web font downloads. The repo is [nike-pegasus-43-pdp](https://github.com/utsav747/nike-pegasus-43-pdp), commit 54c6aea. It now has the Lighthouse CI config, a grid-movement check and a GitHub workflow. The workflow has run on GitHub on every push since: see the Actions results below.
 
 Test conditions (your Slow 4G profile): 375x812 at 3x mobile, 150 ms round trip, 1,638.4 Kbps, 4x slower CPU.
 
@@ -52,3 +52,19 @@ npm run perf:live   # both of the above
 ```
 
 Without `PERF_URL` both checks use the local build at http://localhost:3100, as before. The GitHub workflow now also runs both checks against the live page each time Vercel reports a successful production deploy.
+
+## GitHub Actions results
+
+The "Slow 4G mobile check" workflow (`.github/workflows/lighthouse.yml`) runs on GitHub's own Ubuntu machines, so it proves the checks pass away from this Mac.
+
+| Run | Trigger | What it checked | Result |
+|---|---|---|---|
+| [44378464333](https://github.com/utsav747/nike-pegasus-43-pdp/actions/runs/44378464333) | push to main | build, Lighthouse CI and grid check on the local build | Passed (1m46s) |
+| [44379061361](https://github.com/utsav747/nike-pegasus-43-pdp/actions/runs/44379061361) | "Run workflow" button | Lighthouse CI and grid check on https://nike-pegasus-43-pdp.vercel.app | Passed (1m14s), grid moved 0px |
+
+Every push to main since the checks were added (8 runs up to 18 November 2026) passed. No fix was needed for the Chrome path: the workflow sets `CHROME_PATH=/usr/bin/google-chrome`, which exists on the GitHub Ubuntu runner.
+
+Caveats:
+
+* The live job also listens for Vercel's `vercel.deployment.success` event so it can run after each deploy, but I haven't seen that event arrive yet. Until it does, run the live job by hand from the Actions tab (Run workflow).
+* GitHub shows an annotation that Node.js 20 actions are deprecated. It is a warning only; the run passes.
