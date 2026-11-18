@@ -76,7 +76,7 @@ The user already has a Vercel account.
 
 1. Install the Vercel CLI if it's missing: `npm install --global vercel@latest`, then check `vercel --version`.
 2. `vercel login`. It prints a device link and code. Give the user the exact link and code to approve in their browser, wait for them, then confirm with `vercel whoami`.
-3. Next.js must be on a patched release. Vercel refuses to deploy versions with known vulnerabilities (it rejected 15.5.4). Upgrade `next` and `eslint-config-next` to the latest patch of the same minor version (15.5.29 at the time), then run step 5 again before deploying.
+3. Next.js must be on a patched release. Vercel refuses to deploy versions with known vulnerabilities (it rejected 15.5.4). Upgrade `next` and `eslint-config-next` to the latest patch of the same minor version (15.5.29 at the time), then run the checks in section 5 again before deploying.
 4. From the repo folder, run `vercel link` and then `vercel deploy --prod`.
 5. Connect the GitHub repo so that every push to `main` deploys production: `vercel git connect`. If Vercel's GitHub app isn't allowed to see the repo, give the user exact steps (Vercel project, Settings, Git, Connect `utsav747/nike-pegasus-43-pdp`, then allow access to the repo in GitHub).
 6. Check the live URL without signing in: it returns 200, it shows 9 sold-out buttons and 7 "Selling out fast" notes, and it has the latest code.
