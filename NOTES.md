@@ -1,0 +1,69 @@
+# Nike Pegasus 43 product page: notes
+
+## How to run
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000 in Chrome, open DevTools, switch on device mode and set the width to 375px.
+Production check: `npm run build && npm run start`.
+
+## Measured results (Chromium, 375px viewport)
+
+Measured with Playwright, `getBoundingClientRect()` on each `<main> > section`.
+
+| # | Section | Target | Measured |
+|---|---------|-------:|---------:|
+| 1 | Product image | 300px | 300px |
+| 2 | Title + style line | 50px | 50px |
+| 3 | Price | 50px | 50px |
+| 4 | Size grid | 220px | 220px |
+| 5 | Tech copy (collapsed) | 300px | 300px |
+| 6 | Reviews (collapsed) | 300px | 300px |
+| | **Total** | **1,220px** | **1,220px** |
+
+Expanded, tech copy measured 697px and reviews 657px; both returned to exactly 300px on "Show less".
+
+Size grid:
+- Rows of 7, 7, 7, 5 buttons; every button 44x44.
+- Horizontal and vertical gaps all 4px; left padding 21px, right 22px, top/bottom 16px.
+- No horizontal page scroll (document width 375px).
+
+Stock counts, read from `data/pegasus-43-stock.json` (not hardcoded):
+
+| Status | Count | Men's sizes |
+|--------|------:|-------------|
+| In stock | 17 | everything else |
+| Low stock | 5 | 4, 9, 9.5, 11, 15 |
+| Sold out | 4 | 3.5, 10, 15.5, 16 |
+
+## Checks run
+
+- `npm run build`: passes.
+- `npm run lint`: no warnings or errors.
+- 5 "Selling out fast" notes, each inside its 44x44 button (no overflow).
+- Sold-out buttons are `disabled`, `cursor-not-allowed`, no hover; a forced click does not select them.
+- Selection: clicking 9 then 8 leaves only 8 pressed (`aria-pressed`), filled #111111 with white text.
+- Expand/collapse: the clipped content uses `overflow: hidden` (never scrolls); the link toggles "Read more"/"See more" and "Show less".
+- Slow 3G (Chrome DevTools preset values, 2s latency, 500 kb/s): section heights were already 300/50/50/220/300/300 at first response, and cumulative layout shift was 0.
+
+## Decisions
+
+- **Server components by default.** `app/page.tsx`, `ProductImage`, `ProductTitle`, `ProductPrice` are server components. Only `SizeGrid`, `TechCopy` and `Reviews` are `"use client"`. `components/Expandable.tsx` is a shared shell imported only by those two, so it has no directive of its own.
+- **Stock data** is copied to `data/pegasus-43-stock.json` and read through `lib/stock.ts`, sorted by `display_order`. Name, style code, colorway and price also come from the JSON.
+- **Brand colors** live in `tailwind.config.ts` under `nike.*` (black #111111, greys #F5F5F5 / #E5E5E5 / #CCCCCC / #BDBDBD / #757575, volt #CEFF00). Flat: no shadows, no rounded corners.
+- **CSS is inlined** into the HTML (`experimental.inlineCss` in `next.config.ts`), so the fixed heights apply before any stylesheet request finishes. Without it, a Slow 3G load briefly laid out unstyled content.
+- **Size grid** uses `grid-cols-[repeat(7,44px)] grid-rows-[repeat(4,44px)] gap-1`, buttons `size-[44px] p-0` with a 1px border inside the box. A visually hidden legend reads "Select size, US men's", and a polite live region announces the selection.
+- **Collapsed sections** show a short white fade at the clip edge so cut-off text reads as "more below". The link is plain underlined text with no border or box.
+- **Headlines** (title, section headings) are bold, uppercase, slightly tight tracking, using the condensed stack.
+
+## Deviations and open items
+
+1. **Fonts: no next/font.** Helvetica Neue is not on Google Fonts and no licensed font file was provided, so the page uses a system stack (`"Helvetica Neue", Helvetica, Arial, sans-serif`). Nothing is downloaded, so there is no font swap and no layout shift, which is the goal next/font serves here. If Nike's licensed font files are added, switch to `next/font/local` with `adjustFontFallback`.
+2. **Layout Plan (v2) was not available** in the project files, so this prompt was the only source of truth. The earlier static `pegasus-43.html` had a **296px** size grid (it also showed women's sizes); this build uses the prompt's **220px**, as the prompt's numbers win.
+3. **Placeholders:** product image (SVG in `public/`), tech copy and the six reviews are placeholders, labelled as such in code and on the page ("Sample reviewer A"…). Replace before launch.
+4. **Image** uses `next/image` with `unoptimized`, because the placeholder is an SVG. Remove `unoptimized` when a real JPG/PNG/WebP is used.
+5. **`next lint`** is deprecated in Next.js 15.5 (removed in 16) but still works and is what the prompt asks for; `npx @next/codemod@canary next-lint-to-eslint-cli .` migrates it later.
+6. **Size labels** show the men's size only (no "M"/"W" prefix), because the 44px buttons have no room for it; the hidden legend and each button's label say "Men's".

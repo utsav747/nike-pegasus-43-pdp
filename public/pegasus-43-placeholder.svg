@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="375" height="300" viewBox="0 0 375 300" fill="none">
+  <rect width="375" height="300" fill="#F5F5F5"/>
+  <g transform="translate(77 92)" stroke="#CCCCCC" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M8 72 C 40 70, 60 52, 82 34 C 92 26, 104 24, 112 32 C 124 44, 150 50, 176 54 C 200 58, 212 64, 212 74 L 212 80 L 8 80 Z"/>
+    <path d="M8 84 L 212 84" stroke-width="6"/>
+  </g>
+  <text x="187.5" y="214" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="12" fill="#757575">Product image placeholder</text>
+</svg>
