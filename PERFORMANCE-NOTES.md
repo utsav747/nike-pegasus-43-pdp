@@ -66,5 +66,30 @@ Every push to main since the checks were added (8 runs up to 18 November 2026) p
 
 Caveats:
 
-* The live job also listens for Vercel's `vercel.deployment.success` event so it can run after each deploy, but I haven't seen that event arrive yet. Until it does, run the live job by hand from the Actions tab (Run workflow).
+* The live job starts by itself after each Vercel deploy: Vercel posts a commit status named "Vercel" when the deploy completes, and the workflow listens for it (`on: status`). Proven on 18 November 2026: [run 44388238039](https://github.com/utsav747/nike-pegasus-43-pdp/actions/runs/44388238039) and [run 44390245094](https://github.com/utsav747/nike-pegasus-43-pdp/actions/runs/44390245094) both started on their own after a deploy and passed. Run it by hand with Run workflow if you ever need to.
 * GitHub shows an annotation that Node.js 20 actions are deprecated. It is a warning only; the run passes.
+
+## Real photo (18 November 2026)
+
+The placeholder SVG is replaced by the real product photo (`public/pegasus-43.webp`, 900x900, 33 KB served), through `next/image` without `unoptimized`. The 375x300 box, 300x300 `object-contain` image and #F5F5F5 background are unchanged.
+
+Live page, same Slow 4G profile, median of 3 runs, with `npm run perf:live`:
+
+| Check | Limit | Placeholder | Real photo |
+|---|---|---|---|
+| Largest element | | `main-photo` (the SVG) | `main-photo` (the photo): `section > img`, "Nike Pegasus 43 running shoes, three-quarter view" |
+| Largest paint (LCP) | under 2.5 s | 0.97 s | 1.62 s |
+| First paint | under 1.8 s | 0.79 s | 0.82 s |
+| Blocking time | under 200 ms | 70 ms | 123 ms |
+| Speed index | under 3.4 s | 0.93 s | 0.83 s |
+| Performance score | at least 90 | 100 | 99 |
+| Layout shift | 0 | 0 | 0 |
+| Grid movement | 0px | 0px | 0px |
+
+LCP is about 0.65 s later because the photo is now a real 33 KB download. It still passes. The first run after a fresh deploy is the slowest (2.07 s here), so judge the median.
+
+What went wrong first, so it isn't repeated: the first version used the original 1080x1080 AVIF. Vercel served that file back unresized for every size, and decoding it on the 4x slower CPU pushed blocking time to about 300 ms, over the 200 ms limit (the Lighthouse step failed). Fix: a 900x900 WebP (3x the 300px slot) with the image sizes capped at 900 in `next.config.ts`. Blocking time dropped to 74 to 144 ms on the live page.
+
+The grid never moved at any point, because the image has fixed width, height and box.
+
+Report for this run: [lighthouse-live-slow4g.html](https://nike-pegasus-43-pdp.vercel.app/reports/lighthouse-live-slow4g.html).
