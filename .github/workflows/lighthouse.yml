@@ -1,10 +1,15 @@
 name: Slow 4G mobile check
 
-on: [push, pull_request, deployment_status]
+on:
+  push:
+  pull_request:
+  workflow_dispatch: # the "Run workflow" button in the Actions tab
+  repository_dispatch: # Vercel sends this after a deploy finishes
+    types: [vercel.deployment.success]
 
 jobs:
   lighthouse:
-    if: github.event_name != 'deployment_status'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     env:
       CHROME_PATH: /usr/bin/google-chrome
@@ -24,10 +29,10 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://localhost:3100 >/dev/null && break; sleep 1; done
           npm run perf:grid
 
-  # After Vercel finishes a production deploy (it reports back to GitHub as a deployment
-  # status), run both checks against the live page on the same Slow 4G profile.
+  # Checks the live page on the same Slow 4G profile. Runs when Vercel reports a successful
+  # deploy, or by hand from the Actions tab (Run workflow).
   live:
-    if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    if: github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       CHROME_PATH: /usr/bin/google-chrome
