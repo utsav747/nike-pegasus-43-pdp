@@ -31,21 +31,23 @@ Size grid:
 - Horizontal and vertical gaps all 4px; left padding 21px, right 22px, top/bottom 16px.
 - No horizontal page scroll (document width 375px).
 
-Stock counts, read from `data/pegasus-43-stock.json` (not hardcoded):
+Stock counts, read from `data/pegasus-43-stock.json` (not hardcoded). Data is the 8 December 2026 size and stock snapshot:
 
 | Status | Count | Men's sizes |
 |--------|------:|-------------|
-| In stock | 17 | everything else |
-| Low stock | 5 | 4, 9, 9.5, 11, 15 |
-| Sold out | 4 | 3.5, 10, 15.5, 16 |
+| In stock | 10 | 5.5, 6.5, 7, 7.5, 8, 9.5, 10.5, 11, 12, 12.5 |
+| Low stock | 7 | 3.5, 4, 5, 8.5, 13, 13.5, 14.5 |
+| Sold out | 9 | 4.5, 6, 9, 10, 11.5, 14, 15, 15.5, 16 |
+
+Previous snapshot (17 in stock, 5 low stock, 4 sold out) was replaced on 19 November 2026.
 
 ## Checks run
 
 - `npm run build`: passes.
 - `npm run lint`: no warnings or errors.
-- 5 "Selling out fast" notes, each inside its 44x44 button (no overflow).
+- 7 "Selling out fast" notes, each inside its 44x44 button (no overflow).
 - Sold-out buttons are `disabled`, `cursor-not-allowed`, no hover; a forced click does not select them.
-- Selection: clicking 9 then 8 leaves only 8 pressed (`aria-pressed`), filled #111111 with white text.
+- Selection: clicking 8 (in stock) then 13 (low stock) leaves only 13 pressed (`aria-pressed`), filled #111111 with white text, "Selling out fast" note white inside the fill. Clicking sold-out 9 afterwards changes nothing. Grid top stays at 400px and page total stays 1,220px.
 - Expand/collapse: the clipped content uses `overflow: hidden` (never scrolls); the link toggles "Read more"/"See more" and "Show less".
 - Slow 3G (Chrome DevTools preset values, 2s latency, 500 kb/s): section heights were already 300/50/50/220/300/300 at first response, and cumulative layout shift was 0.
 
