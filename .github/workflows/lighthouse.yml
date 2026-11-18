@@ -1,9 +1,10 @@
 name: Slow 4G mobile check
 
-on: [push, pull_request]
+on: [push, pull_request, deployment_status]
 
 jobs:
   lighthouse:
+    if: github.event_name != 'deployment_status'
     runs-on: ubuntu-latest
     env:
       CHROME_PATH: /usr/bin/google-chrome
@@ -22,3 +23,21 @@ jobs:
           npx next start -p 3100 &
           for i in $(seq 1 30); do curl -sf http://localhost:3100 >/dev/null && break; sleep 1; done
           npm run perf:grid
+
+  # After Vercel finishes a production deploy (it reports back to GitHub as a deployment
+  # status), run both checks against the live page on the same Slow 4G profile.
+  live:
+    if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+      PERF_URL: https://nike-pegasus-43-pdp.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run perf:lhci
+      - run: npm run perf:grid

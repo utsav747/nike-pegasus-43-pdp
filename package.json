@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "perf:lhci": "lhci autorun --config=lighthouserc.cjs",
-    "perf:grid": "node scripts/grid-shift-check.mjs http://localhost:3100 --runs 3"
+    "perf:grid": "node scripts/grid-shift-check.mjs --runs 3",
+    "perf:live": "PERF_URL=https://nike-pegasus-43-pdp.vercel.app npm run perf:lhci && PERF_URL=https://nike-pegasus-43-pdp.vercel.app npm run perf:grid"
   },
   "dependencies": {
     "next": "15.5.29",

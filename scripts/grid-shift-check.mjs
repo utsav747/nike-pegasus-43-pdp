@@ -4,6 +4,8 @@
 // every layout shift with its source nodes, and every size button's rendered size.
 //
 // Usage: node scripts/grid-shift-check.mjs [url] [--trace out.json] [--runs N]
+// The URL comes from the first argument, else the PERF_URL environment variable,
+// else http://localhost:3100 (the local production build).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,7 +13,8 @@ import puppeteer from "puppeteer-core";
 import yaml from "js-yaml";
 
 const args = process.argv.slice(2);
-const url = args.find((a) => /^https?:/.test(a)) ?? "http://localhost:3000";
+const url = args.find((a) => /^https?:/.test(a)) ?? process.env.PERF_URL ?? "http://localhost:3100";
+console.log(`Grid check target: ${url}`);
 const traceOut = args.includes("--trace") ? args[args.indexOf("--trace") + 1] : null;
 const runs = args.includes("--runs") ? Number(args[args.indexOf("--runs") + 1]) : 3;
 

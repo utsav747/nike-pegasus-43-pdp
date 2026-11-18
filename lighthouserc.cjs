@@ -9,12 +9,16 @@ const profile = yaml.load(fs.readFileSync(path.join(__dirname, "perf/slow-4g-mob
 const budget = JSON.parse(fs.readFileSync(path.join(__dirname, "speed-budget.json"), "utf8"));
 const settings = profile.lighthouse_settings;
 
+// Target URL: PERF_URL if set (e.g. the live https://nike-pegasus-43-pdp.vercel.app), else the
+// local production build on port 3100. A remote URL skips starting the local server.
+const target = process.env.PERF_URL || "http://localhost:3100/";
+const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(target);
+
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: "npm run start -- -p 3100",
-      startServerReadyPattern: "Ready",
-      url: ["http://localhost:3100/"],
+      ...(isLocal ? { startServerCommand: "npm run start -- -p 3100", startServerReadyPattern: "Ready" } : {}),
+      url: [target],
       numberOfRuns: 3,
       chromePath: process.env.CHROME_PATH,
       settings: {
@@ -36,6 +40,6 @@ module.exports = {
         "speed-index": ["error", { maxNumericValue: 3400, aggregationMethod: "median-run" }],
       },
     },
-    upload: { target: "filesystem", outputDir: ".lighthouseci/reports" },
+    upload: { target: "filesystem", outputDir: isLocal ? ".lighthouseci/reports" : ".lighthouseci/reports-live" },
   },
 };
