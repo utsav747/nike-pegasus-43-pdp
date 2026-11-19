@@ -9,6 +9,7 @@ npm run dev   # http://localhost:3000, view in Chrome device mode at 375px
 
 - `PROMPT.md`: the build prompt.
 - `LAUNCH-PROMPT.md`: the prompt for the 8 December stock update and the Vercel launch.
+- `DECK-PROMPT.md`: the slide-by-slide prompt for the 12-slide launch deck (green-glow style, plus the HTML version with motion).
 - `NOTES.md`: decisions, measured section heights, stock counts, deviations.
 - Stock data: `data/pegasus-43-stock.json`.
 - `PERFORMANCE-NOTES.md`: Slow 4G size grid check, speed limits and results.
